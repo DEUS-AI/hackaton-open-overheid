@@ -1,0 +1,52 @@
+/* 
+ * Mantine theme-integrated global styles for Government Application
+ * 
+ * This file contains global styles that integrate with the Mantine theme system.
+ * It uses CSS custom properties from Mantine for consistency and theme integration.
+ * 
+ * All colors, spacing, and other design tokens should reference Mantine variables
+ * to ensure consistency with the theme defined in ThemeProvider.tsx
+ */
+
+/* Base styles that work with Mantine theme */
+html,
+body {
+  font-family: var(--mantine-font-family);
+  background-color: var(--mantine-color-white);
+  color: var(--mantine-color-text);
+  line-height: 1.6;
+}
+
+/* CSS variables for third-party components (LiveKit) */
+:root {
+  --lk-va-bar-width: 72px;
+  --lk-control-bar-height: unset;
+  --tooltip-bg: rgba(32, 32, 32, 1);
+}
+
+/* LiveKit agent visualizer styles */
+.agent-visualizer {
+  background-color: transparent;
+}
+
+.agent-visualizer > .lk-audio-bar {
+  width: 72px;
+}
+
+.lk-agent-control-bar {
+  border-top: 0;
+  padding: 0;
+  height: min-content;
+  margin-right: var(--mantine-spacing-md);
+}
+
+.lk-disconnect-button {
+  height: 36px;
+  background-color: #31100c;
+  border-color: #6b221a;
+}
+
+.lk-disconnect-button:hover {
+  background-color: #6b221a;
+  color: white;
+}

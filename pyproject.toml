@@ -1,0 +1,72 @@
+[project]
+name = "hackaton-open-overheid-poc"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "azure-servicebus>=7.14.2",
+    "datetime>=5.5",
+    "pypdf2>=3.0.1",
+    "python-dotenv>=1.1.1",
+    "google-generativeai>=0.8.0",
+    "resend>=2.5.0",
+    "pymongo[srv]>=4.8.0",
+    "flask>=3.0.0",
+    "requests>=2.31.0",
+    "sentence-transformers>=5.1.1",
+    "langchain-text-splitters>=0.3.11",
+    "fastapi>=0.118.0",
+    "pydantic>=2.11.9",
+    "typing>=3.10.0.0",
+    "openai>=1.109.0",
+    "uvicorn>=0.37.0",
+    "aiohttp>=3.12.15",
+    "livekit>=1.0.13",
+    "livekit-agents>=0.12.21",
+    "av>=15.1.0",
+    "livekit-plugins-openai>=0.12.4",
+]
+
+[dependency-groups]
+# Development-only tools (install with: uv sync --group dev)
+dev = [
+    "ruff>=0.6.3",
+    "pytest>=8.3.2",
+]
+
+# Agent-only dependency group; installed in the agent image layer
+agent = [
+    "livekit>=0.19.1",
+    "livekit-agents>=0.12.11,<1.0.0",
+    "livekit-plugins-openai>=0.10.17,<1.0.0",
+    "aiohttp>=3.9",
+]
+
+[tool.ruff]
+# Keep line length reasonable; adjust if needed.
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+# Core rules: Pyflakes (F), Pycodestyle (E), import sorting (I), Bugbear (B), Pyupgrade (UP), and Type Checking (T).
+select = ["E", "F", "W", "I", "UP", "T"]
+# E402: module level import not at top — we manipulate sys.path intentionally in scripts.
+ignore = ["E402"]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow unused imports in package initializers
+"**/__init__.py" = ["F401"]
+# Allow long informational string in this script.
+"**/metadata_extractor.py" = ["E501"]
+
+[tool.pytest.ini_options]
+# Discover tests everywhere and allow colocated tests using the pattern below.
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
