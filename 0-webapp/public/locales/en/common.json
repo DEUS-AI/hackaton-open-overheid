@@ -1,0 +1,97 @@
+{
+  "nav": {
+    "home": "Home",
+    "topics": "Topics",
+    "woo": "Open Government Act (Woo)"
+  },
+  "heading": "How can I help you today?",
+  "input": {
+    "placeholder": "e.g. demographic data Gelderland 2024"
+  },
+  "tooltips": {
+    "microphone": "Toggle microphone",
+    "microphoneOff": "Microphone is muted",
+    "voiceActivation": "Start voice conversation",
+    "voiceActive": "Voice conversation active",
+    "send": "Send message"
+  },
+  "noAgent": {
+    "message": "It's quiet... too quiet. Is your agent lost? Ensure your agent is properly configured and running on your machine.",
+    "viewGuide": "View guide"
+  },
+  "buttons": {
+    "startConversation": "Start a conversation"
+  },
+  "alert": {
+    "deviceError": "Error acquiring camera or microphone permissions. Please grant the necessary permissions in your browser and reload the tab"
+  },
+  "page": {
+    "upload": {
+      "title": "New document or URL",
+      "navLabel": "Ingest",
+      "instructions": "Provide a document or a public URL to start the ingestion pipeline. An identifier will be generated automatically.",
+      "fileLabel": "Document (optional if URL)",
+      "filePlaceholder": "Select file",
+      "urlLabel": "Source URL",
+      "urlPlaceholder": "https://example.com/report.pdf",
+      "upload": "Submit",
+      "uploading": "Processing…",
+      "reset": "Reset",
+      "info": "The file is stored locally or the remote content will be fetched and queued for processing.",
+      "statuses": {
+        "not-started": "Not Started",
+        "started": "Started",
+        "processing": "Processing",
+        "queued": "Queued",
+        "ok": "Completed",
+        "completed": "Completed",
+        "error": "Error",
+        "failed": "Failed"
+      }
+    },
+    "status": {
+      "documentPipelineStatus": "Pipeline Status",
+      "id": "ID",
+      "notFound": "Not Found",
+      "documentNotFoundYet": "The document was not found yet. Please try again later.",
+      "stage": "Stage",
+      "status": "Status",
+      "timestamp": "Timestamp",
+      "extra": "Extra",
+      "autoRefresh": "Auto-refresh every 2 seconds.",
+      "stages": {
+        "ingestion": "Ingestion",
+        "validation": "Validation",
+        "pii-scanning": "PII Scanning",
+        "extractor": "Extractor",
+        "data-storage": "Data Storage",
+        "search-index": "Search Index",
+        "notification": "Notification",
+        "embedding": "Embedding"
+      },
+      "statuses": {
+        "not-started": "Not Started",
+        "started": "Started",
+        "processing": "Processing",
+        "queued": "Queued",
+        "ok": "Completed",
+        "completed": "Completed",
+        "error": "Error",
+        "failed": "Failed"
+      }
+    },
+    "processedDocuments": {
+      "navLabel": "Processed",
+      "title": "Processed sources",
+      "id": "ID",
+      "name": "Name / URL",
+      "status": "Status",
+      "uploadedAt": "Added at",
+      "loading": "Loading...",
+      "noName": "-",
+      "noStatus": "-",
+      "noDate": "-",
+      "error": "Error loading sources"
+    }
+  }
+}

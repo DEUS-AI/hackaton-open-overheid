@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Mantine-integrated global styles */
+@import '../styles/mantine-globals.css';

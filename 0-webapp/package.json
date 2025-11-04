@@ -1,0 +1,45 @@
+{
+  "name": "webapp-bis",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@azure/service-bus": "^7.9.5",
+    "@dagrejs/dagre": "^1.1.5",
+    "@livekit/components-react": "^2.9.14",
+    "@livekit/components-styles": "^1.1.6",
+    "@mantine/core": "^7.13.5",
+    "@mantine/hooks": "^7.13.5",
+    "@mantine/notifications": "^8.3.2",
+    "@tabler/icons-react": "^3.35.0",
+    "@xyflow/react": "^12.8.5",
+    "i18next": "^23.11.5",
+    "i18next-http-backend": "^3.0.2",
+    "livekit-client": "^2.6.1",
+    "livekit-server-sdk": "^2.13.3",
+    "mongodb": "^6.20.0",
+    "neo4j-driver": "^5.28.2",
+    "next": "^14.2.5",
+    "openai": "^5.23.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-i18next": "^15.7.3",
+    "styled-components": "^6.1.19"
+  },
+  "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.5",
+    "typescript": "^5.4.5",
+    "unimported": "^1.31.1"
+  }
+}

@@ -1,0 +1,311 @@
+version: '3.8'
+
+services:
+  # MongoDB for local development
+  mongodb:
+    container_name: "mongodb"
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "mongoadmin"
+      MONGO_INITDB_ROOT_PASSWORD: "mongopass"
+      MONGO_INITDB_DATABASE: "overheid"
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh -u \"$MONGO_INITDB_ROOT_USERNAME\" -p \"$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand(\"ping\")' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: none
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - microservices-network
+      
+  # Solr for search indexing
+  solr:
+    container_name: "solr"
+    image: solr:9.4
+    ports:
+      - "8983:8983"
+    volumes:
+      - solr-data:/var/solr
+    command:
+      - solr-precreate
+      - documents
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8983/solr/documents/admin/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microservices-network
+
+  # Azure Service Bus Emulator
+  servicebus:
+    container_name: "servicebus-emulator"
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    pull_policy: always
+    volumes:
+      - "./config.json:/ServiceBus_Emulator/ConfigFiles/Config.json"
+    ports:
+      - "5672:5672"
+      - "5300:5300"
+    environment:
+      SQL_SERVER: sqledge
+      MSSQL_SA_PASSWORD: "YourPasswordHere!"  # Password should be same as what is set for SQL Edge
+      ACCEPT_EULA: "Y"
+      SQL_WAIT_INTERVAL: "15" # Optional: Time in seconds to wait for SQL to be ready (default is 15 seconds)
+    depends_on:
+      sqledge:
+        condition: service_started
+    networks:
+      - microservices-network
+    restart: unless-stopped
+      
+  # Azure SQL Edge
+  sqledge:
+    container_name: "sqledge"
+    image: "mcr.microsoft.com/azure-sql-edge:1.0.3"
+    platform: linux/amd64
+    networks:
+      - microservices-network
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "YourPasswordHere!"
+    restart: unless-stopped
+
+  # Base image build stage
+  base:
+    container_name: "base-image"
+    build:
+      context: .
+      dockerfile: Dockerfile.base
+    image: hackaton-open-overheid-poc-base:latest
+
+  wait-for-servicebus:
+    image: busybox
+    container_name: "wait-for-servicebus"
+    command: sh -c "until nc -z servicebus 5672 && nc -z servicebus 5300; do echo 'Waiting for servicebus...'; sleep 5; done; echo 'Servicebus is ready'"
+    networks:
+      - microservices-network
+    depends_on:
+      - servicebus
+
+  #Microservices
+  data-ingestion:
+    container_name: "data-ingestion"
+    build:
+      context: .
+      dockerfile: 1-data_ingestion/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      - AZURE_VALIDATION_QUEUE=validation
+      - AZURE_DOCUMENT_INGESTION_QUEUE=ingestion
+      - SHARED_UPLOAD_DIR=/uploads
+    env_file: ".env"
+    networks:
+      - microservices-network
+    volumes:
+      - uploads-data:/uploads:ro
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+
+  validation:
+    container_name: "validation"
+    build:
+      context: .
+      dockerfile: 2-validation/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      - AZURE_VALIDATION_QUEUE=validation
+      - AZURE_PII_SCANNING_QUEUE=pii-scanning
+    networks:
+      - microservices-network
+    env_file: ".env"
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+
+  pii-scanning:
+    container_name: "pii-scanning"
+    build:
+      context: .
+      dockerfile: 3-pii_scanning/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      - AZURE_PII_SCANNING_QUEUE=pii-scanning
+      - AZURE_EXTRACTOR_QUEUE=extractor
+    env_file: ".env"
+    networks:
+      - microservices-network
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+
+  metadata-extractor:
+    container_name: "metadata-extractor"
+    build:
+      context: .
+      dockerfile: 4-metadata_extractor/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+    env_file: ".env"
+    networks:
+      - microservices-network
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+
+  embedding-generator:
+    container_name: "embedding-generator"
+    build:
+      context: .
+      dockerfile: 4-5-embedding_generator/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      - AZURE_EXTRACTOR_QUEUE=extractor
+      - AZURE_DATA_STORAGE_QUEUE=data-storage
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - CHUNK_SIZE=1000
+      - CHUNK_OVERLAP=200
+    env_file: ".env"
+    networks:
+      - microservices-network
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      metadata-extractor:
+        condition: service_started
+      base:
+        condition: service_completed_successfully
+
+  data-storage:
+    container_name: "data-storage"
+    build:
+      context: .
+      dockerfile: 5-1-data_storage/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+    env_file:
+      - ".env"
+    networks:
+      - microservices-network
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+      mongodb:
+        condition: service_healthy
+
+  search-index:
+    container_name: "search-index"
+    build:
+      context: .
+      dockerfile: 5-2-search_index/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      - AZURE_SEARCH_INDEX_QUEUE=search-index
+      - SOLR_URL=http://solr:8983/solr
+      - SOLR_COLLECTION=documents
+      - RUNNING_IN_DOCKER=true
+    networks:
+      - microservices-network
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+      solr:
+        condition: service_healthy
+
+  notification:
+    container_name: "notification"
+    build:
+      context: .
+      dockerfile: 5-3-email_notificator/Dockerfile
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+    env_file: ".env"
+    networks:
+      - microservices-network
+    depends_on:
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+
+  agent:
+    container_name: "agent"
+    build:
+      context: ./6-agent
+      dockerfile: Dockerfile
+    env_file: ".env"
+    environment:
+      - WEBAPP_URL=http://webapp:3000
+      # LIVEKIT and OPENAI envs are expected from .env
+      # - LIVEKIT_URL=${LIVEKIT_URL}
+      # - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      # - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      # - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - microservices-network
+    depends_on:
+      webapp:
+        condition: service_started
+      base:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  webapp:
+    container_name: "webapp"
+    build:
+      context: ./0-webapp
+      dockerfile: Dockerfile
+    env_file: ".env"
+    environment:
+      - AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      - AZURE_DOCUMENT_INGESTION_QUEUE=ingestion
+      - MONGO_HOST=mongodb
+      - MONGO_PORT=27017
+      - MONGO_USER=mongoadmin
+      - MONGO_PASSWORD=mongopass
+      - MONGO_DB=overheid
+      - MONGO_AUTH_DB=admin
+      - MONGO_STATUS_COLLECTION=pipeline_status
+      - WEBAPP_UPLOAD_DIR=/uploads
+    ports:
+      - "8000:3000"
+    networks:
+      - microservices-network
+    volumes:
+      - uploads-data:/uploads
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      wait-for-servicebus:
+        condition: service_completed_successfully
+      base:
+        condition: service_completed_successfully
+    restart: unless-stopped
+      
+networks:
+  microservices-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  uploads-data:
+  solr-data:

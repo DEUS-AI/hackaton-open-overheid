@@ -1,0 +1,97 @@
+{
+  "nav": {
+    "home": "Home",
+    "topics": "Onderwerpen",
+    "woo": "Wet open overheid (Woo)"
+  },
+  "heading": "Waarmee kan ik u vandaag helpen?",
+  "input": {
+    "placeholder": "bijv: demografische gegevens Gelderland 2024"
+  },
+  "tooltips": {
+    "microphone": "Microfoon in-/uitschakelen",
+    "microphoneOff": "Microfoon is uitgeschakeld",
+    "voiceActivation": "Spraakgesprek starten",
+    "voiceActive": "Spraakgesprek actief",
+    "send": "Bericht verzenden"
+  },
+  "noAgent": {
+    "message": "Het is stil... te stil. Is uw agent de weg kwijt? Zorg ervoor dat uw agent correct is geconfigureerd en actief is.",
+    "viewGuide": "Handleiding"
+  },
+  "buttons": {
+    "startConversation": "Start een gesprek"
+  },
+  "alert": {
+    "deviceError": "Fout bij het verkrijgen van camera- of microfoonrechten. Verleen de vereiste rechten in uw browser en herlaad de pagina."
+  },
+  "page": {
+    "upload": {
+      "title": "Nieuw document of URL",
+      "navLabel": "Ingestie",
+      "instructions": "Upload een document of geef een publieke URL op om de verwerkingspipeline te starten. Een ID wordt automatisch gegenereerd.",
+      "fileLabel": "Document (optioneel bij URL)",
+      "filePlaceholder": "Selecteer bestand",
+      "urlLabel": "Bron-URL",
+      "urlPlaceholder": "https://voorbeeld.nl/rapport.pdf",
+      "upload": "Verzenden",
+      "uploading": "Bezig met verwerken…",
+      "reset": "Resetten",
+      "info": "Het bestand wordt lokaal opgeslagen of de externe inhoud wordt opgehaald en in de wachtrij geplaatst.",
+      "statuses": {
+        "not-started": "Niet begonnen",
+        "started": "Gestart",
+        "processing": "Verwerken",
+        "queued": "In wachtrij",
+        "ok": "Voltooid",
+        "completed": "Voltooid",
+        "error": "Fout",
+        "failed": "Mislukt"
+      }
+    },
+    "status": {
+      "documentPipelineStatus": "Pipeline-status",
+      "id": "ID",
+      "notFound": "Niet gevonden",
+      "documentNotFoundYet": "Het document is nog niet gevonden. Probeer het later opnieuw.",
+      "stage": "Fase",
+      "status": "Status",
+      "timestamp": "Tijdstempel",
+      "extra": "Extra",
+      "autoRefresh": "Automatisch verversen elke 2 seconden.",
+      "stages": {
+        "ingestion": "Inname",
+        "validation": "Validatie",
+        "pii-scanning": "PII-scanning",
+        "extractor": "Extractor",
+        "data-storage": "Gegevensopslag",
+        "search-index": "Zoekindex",
+        "notification": "Notificatie",
+        "embedding": "Inbedding"
+      },
+      "statuses": {
+        "not-started": "Niet begonnen",
+        "started": "Gestart",
+        "processing": "Verwerken",
+        "queued": "In wachtrij",
+        "ok": "Voltooid",
+        "completed": "Voltooid",
+        "error": "Fout",
+        "failed": "Mislukt"
+      }
+    },
+    "processedDocuments": {
+      "navLabel": "Verwerkt",
+      "title": "Verwerkte bronnen",
+      "id": "ID",
+      "name": "Naam / URL",
+      "status": "Status",
+      "uploadedAt": "Toegevoegd op",
+      "loading": "Bezig met laden...",
+      "noName": "-",
+      "noStatus": "-",
+      "noDate": "-",
+      "error": "Fout bij het laden van bronnen"
+    }
+  }
+}
